@@ -1,0 +1,70 @@
+#!/usr/bin/env bash
+# discos-theme <scheme> — render templates/*.tmpl with a base16/base24 scheme
+set -euo pipefail
+DISCOS="${DISCOS_HOME:-$HOME/.config/discos}"
+name="${1:?usage: discos-theme <scheme>}"
+scheme="$DISCOS/themes/$name.yaml"
+out="$DISCOS/current-theme"
+[[ -f $scheme ]] || { echo "unknown scheme: $name" >&2; exit 1; }
+mkdir -p "$out"
+
+# Turn the scheme into a sed script. Handles base16 + base24 and
+# emits both discOS ({{base0D}}) and tinted ({{base0D-hex}} etc.) placeholders.
+subs=$(awk -v slug="$name" '
+  function val(s) {
+    sub(/^[^:]*:[ \t]*/, "", s)
+    if (s ~ /^"/) { s = substr(s, 2); sub(/".*$/, "", s) }  # quoted: keep up to closing quote
+    else sub(/[ \t]+#.*$/, "", s)                            # unquoted: drop trailing comment
+    sub(/[ \t]+$/, "", s); return s
+  }
+  function esc(s) { gsub(/[\\|&]/, "\\\\&", s); return s }
+  function h2d(h,   i, v) { v = 0; h = tolower(h)
+    for (i = 1; i <= length(h); i++) v = v * 16 + index("0123456789abcdef", substr(h, i, 1)) - 1
+    return v }
+  function rule(k, v) { printf "s|{{%s}}|%s|g\n", k, esc(v) }
+
+  /^name:/    { meta["scheme-name"] = val($0) }
+  /^author:/  { meta["scheme-author"] = val($0) }
+  /^system:/  { meta["scheme-system"] = val($0) }
+  /^variant:/ { meta["scheme-variant"] = val($0) }
+  /^[ \t]+base[0-9A-Fa-f][0-9A-Fa-f]:/ {
+    k = $1; sub(/:$/, "", k); v = val($0); sub(/^#/, "", v); pal[k] = tolower(v)
+  }
+  END {
+    # base24 slots missing from a base16 scheme (base24 spec fallbacks)
+    split("base10 base00 base11 base00 base12 base08 base13 base0A base14 base0B base15 base0C base16 base0D base17 base0E", fb, " ")
+    for (i = 1; i < 16; i += 2) if (!(fb[i] in pal)) pal[fb[i]] = pal[fb[i+1]]
+
+    for (k in pal) {
+      x = pal[k]; r = substr(x,1,2); g = substr(x,3,2); b = substr(x,5,2)
+      rule(k, x); rule(k "-hex", x); rule(k "-hex-bgr", b g r)
+      rule(k "-hex-r", r); rule(k "-hex-g", g); rule(k "-hex-b", b)
+      rule(k "-rgb-r", h2d(r)); rule(k "-rgb-g", h2d(g)); rule(k "-rgb-b", h2d(b))
+      rule(k "-dec-r", sprintf("%.4f", h2d(r)/255)); rule(k "-dec-g", sprintf("%.4f", h2d(g)/255)); rule(k "-dec-b", sprintf("%.4f", h2d(b)/255))
+    }
+    meta["scheme-slug"] = slug
+    s = slug; gsub(/-/, "_", s); meta["scheme-slug-underscored"] = s
+    for (k in meta) rule(k, meta[k])
+  }' "$scheme")
+
+for tmpl in "$DISCOS"/templates/*.tmpl; do
+  f=$(basename "${tmpl%.tmpl}")
+  sed "$subs" "$tmpl" > "$out/$f"
+  left=$(grep -o '{{[^}]*}}' "$out/$f" | sort -u | tr '\n' ' ' || true)
+  [[ -n $left ]] && echo "warning: $f has unfilled placeholders: $left" >&2
+done
+echo "$name" > "$out/name"
+
+# reload whatever is running (failures here are non-fatal)
+if [[ -x ~/.config/borders/bordersrc ]] && pgrep -xq borders; then
+  ~/.config/borders/bordersrc || true
+fi
+if pgrep -xq sketchybar; then
+  sketchybar --reload || true
+fi
+osascript -e 'if application "Ghostty" is running then
+  tell application "Ghostty" to perform action "reload_config" on focused terminal of selected tab of front window
+end if' >/dev/null 2>&1 || true
+command -v fish >/dev/null && fish -c "set -U discos_theme_stamp $(date +%s)" || true
+
+echo "discOS theme: $name"
