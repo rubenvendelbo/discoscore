@@ -67,4 +67,25 @@ osascript -e 'if application "Ghostty" is running then
 end if' >/dev/null 2>&1 || true
 command -v fish >/dev/null && fish -c "set -U discos_theme_stamp $(date +%s)" || true
 
+# vicinae: the rendered theme is linked in once and re-applied on every switch
+if command -v vicinae >/dev/null; then
+  vthemes="$HOME/.local/share/vicinae/themes"
+  mkdir -p "$vthemes"
+  ln -sf "$out/vicinae.toml" "$vthemes/discos.toml"
+  vicinae theme set discos >/dev/null 2>&1 || true
+fi
+
+# wallpaper: recolor $DISCOS/wallpaper.* into the palette with lutgen.
+# macOS caches the desktop picture by path, so the output is named per theme.
+src=$(ls "$DISCOS"/wallpaper.{jpg,jpeg,png,heic} 2>/dev/null | head -1 || true)
+if [[ -n $src ]] && command -v lutgen >/dev/null; then
+  wp="$out/wallpaper-$name.png"
+  rm -f "$out"/wallpaper-*.png
+  # shellcheck disable=SC2046  # one color per word
+  if lutgen apply -o "$wp" "$src" -- $(grep -v '^#[^0-9a-f]' "$out/wallpaper.palette" | sort -u) >/dev/null 2>&1; then
+    osascript -e "tell application \"System Events\" to tell every desktop to set picture to POSIX file \"$wp\"" \
+      >/dev/null 2>&1 || echo "warning: could not set wallpaper" >&2
+  fi
+fi
+
 echo "discOS theme: $name"

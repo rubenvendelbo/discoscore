@@ -1,0 +1,74 @@
+# discOS — generated, don't edit
+# Linked into ~/.local/share/vicinae/themes/discos.toml by discos-theme.
+
+[meta]
+name = "discOS"
+description = "{{scheme-name}} via discOS"
+variant = "{{scheme-variant}}"
+inherits = "vicinae-{{scheme-variant}}"
+
+[colors.core]
+accent = "#{{base0D}}"
+accent_foreground = "#{{base00}}"
+background = "#{{base00}}"
+foreground = "#{{base05}}"
+secondary_background = "#{{base01}}"
+border = "#{{base02}}"
+
+[colors.main_window]
+border = "#{{base02}}"
+footer = { background = "colors.core.secondary_background" }
+
+[colors.settings_window]
+border = "#{{base02}}"
+
+[colors.accents]
+blue = "#{{base0D}}"
+green = "#{{base0B}}"
+magenta = "#{{base0E}}"
+orange = "#{{base09}}"
+red = "#{{base08}}"
+yellow = "#{{base0A}}"
+cyan = "#{{base0C}}"
+purple = "#{{base0E}}"
+
+[colors.shortcut]
+border = "colors.core.border"
+
+[colors.text]
+default = "colors.core.foreground"
+muted = "#{{base04}}"
+danger = "#{{base08}}"
+success = "#{{base0B}}"
+placeholder = "#{{base03}}"
+selection = { background = "#{{base0D}}", foreground = "#{{base00}}" }
+
+[colors.text.links]
+default = "#{{base0D}}"
+visited = "#{{base0E}}"
+
+[colors.input]
+border = "#{{base02}}"
+border_focus = "#{{base0D}}"
+border_error = "#{{base08}}"
+
+[colors.button.primary]
+background = "#{{base01}}"
+foreground = "#{{base05}}"
+hover = { background = "#{{base02}}" }
+focus = { outline = "colors.core.accent" }
+
+[colors.list.item.hover]
+foreground = "#{{base05}}"
+secondary_foreground = "#{{base05}}"
+
+[colors.list.item.selection]
+background = "#{{base02}}"
+foreground = "#{{base05}}"
+secondary_background = "#{{base02}}"
+secondary_foreground = "#{{base05}}"
+
+[colors.grid.item]
+background = "#{{base01}}"
+hover = { outline = "#{{base05}}" }
+selection = { outline = "#{{base05}}" }

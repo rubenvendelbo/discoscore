@@ -1,6 +1,6 @@
 require('mini.base16').setup({ palette = {
-  base00 = '#282828', base01 = '#3c3836', base02 = '#504945', base03 = '#665c54',
-  base04 = '#928374', base05 = '#ebdbb2', base06 = '#fbf1c7', base07 = '#f9f5d7',
-  base08 = '#cc241d', base09 = '#d65d0e', base0A = '#d79921', base0B = '#98971a',
-  base0C = '#689d6a', base0D = '#458588', base0E = '#b16286', base0F = '#9d0006',
+  base00 = '#1e1e2e', base01 = '#181825', base02 = '#313244', base03 = '#45475a',
+  base04 = '#585b70', base05 = '#cdd6f4', base06 = '#f5e0dc', base07 = '#b4befe',
+  base08 = '#f38ba8', base09 = '#fab387', base0A = '#f9e2af', base0B = '#a6e3a1',
+  base0C = '#94e2d5', base0D = '#89b4fa', base0E = '#cba6f7', base0F = '#f2cdcd',
 }})
